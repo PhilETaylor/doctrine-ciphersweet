@@ -25,7 +25,7 @@ use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 class DoctrineCiphersweetSubscriber implements EventSubscriber
 {
     const ENCRYPTOR_INTERFACE_NS = 'DoctrineCiphersweetBundle\Encryptors\EncryptorInterface';
-    const ENCRYPTED_ANN_NAME = EncryptedWithBlindIndex::class;
+    const ENCRYPTED_ANN_NAME     = EncryptedWithBlindIndex::class;
 
     /**
      * @var array
@@ -64,17 +64,17 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
     /**
      * Initialization of subscriber.
      *
-     * @param string $encryptorClass The encryptor class.  This can be empty if a service is being provided.
-     * @param string $secretKey the secret key
-     * @param EncryptorInterface|null $service (Optional)  An EncryptorInterface.
+     * @param string                  $encryptorClass The encryptor class.  This can be empty if a service is being provided.
+     * @param string                  $secretKey      the secret key
+     * @param EncryptorInterface|null $service        (Optional)  An EncryptorInterface.
      *
      * This allows for the use of dependency injection for the encrypters.
      */
     public function __construct(Reader $annReader, $encryptorClass, string $key)
     {
-        $this->annReader = $annReader;
+        $this->annReader  = $annReader;
         $this->secretKeys = $key;
-        $this->encryptor = $encryptorClass;
+        $this->encryptor  = $encryptorClass;
 
         $this->restoreEncryptor = $this->encryptor;
     }
@@ -106,7 +106,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      */
     public function onFlush(OnFlushEventArgs $args)
     {
-        $em = $args->getEntityManager();
+        $em         = $args->getEntityManager();
         $unitOfWork = $em->getUnitOfWork();
 
         $this->postFlushDecryptQueue = [];
@@ -160,7 +160,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
             return $this->encryptedFieldCache[$className];
         }
 
-        $meta = $em->getClassMetadata($className);
+        $meta            = $em->getClassMetadata($className);
         $encryptedFields = [];
 
         foreach ($meta->getReflectionProperties() as $refProperty) {
@@ -203,7 +203,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                     if ('encrypt' === $force) {
                         list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                         foreach ($indexes as $key => $blindIndexValue) {
-                            $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
+                            $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
                             $entity->$setter($blindIndexValue);
                         }
                     } else {
@@ -222,7 +222,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                         } else {
                             list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                             foreach ($indexes as $key => $blindIndexValue) {
-                                $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
+                                $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
                                 $entity->$setter($blindIndexValue);
                             }
                         }
@@ -291,8 +291,8 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
         foreach ($this->postFlushDecryptQueue as $pair) {
             $fieldPairs = $pair['fields'];
-            $entity = $pair['entity'];
-            $oid = spl_object_hash($entity);
+            $entity     = $pair['entity'];
+            $oid        = spl_object_hash($entity);
 
             foreach ($fieldPairs as $fieldPair) {
                 /** @var \ReflectionProperty $field */
@@ -323,7 +323,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
     public function postLoad(LifecycleEventArgs $args)
     {
         $entity = $args->getEntity();
-        $em = $args->getEntityManager();
+        $em     = $args->getEntityManager();
 
         if (!$this->hasInDecodedRegistry($entity)) {
             if ($this->processFields($entity, $em, false)) {

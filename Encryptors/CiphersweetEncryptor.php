@@ -11,7 +11,6 @@ namespace DoctrineCiphersweetBundle\Encryptors;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedField;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 class CiphersweetEncryptor implements EncryptorInterface
 {

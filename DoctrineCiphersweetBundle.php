@@ -9,7 +9,6 @@
 namespace DoctrineCiphersweetBundle;
 
 use DoctrineCiphersweetBundle\DependencyInjection\DoctrineCiphersweetExtension;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class DoctrineCiphersweetBundle extends Bundle
