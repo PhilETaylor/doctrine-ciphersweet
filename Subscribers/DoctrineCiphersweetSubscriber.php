@@ -1,8 +1,8 @@
 <?php
 /*
- * @copyright  Copyright (C) 2017, 2018, 2019 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
+ * @copyright  Copyright (C) 2020 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
  * @author     Phil Taylor <phil@phil-taylor.com>
- * @see        https://github.com/PhilETaylor/mysites.guru
+ * @see        https://github.com/PhilETaylor/doctrine-ciphersweet
  * @license    MIT
  */
 
@@ -15,75 +15,34 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Mapping\UnderscoreNamingStrategy;
-use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 use DoctrineCiphersweetBundle\Configuration\EncryptedWithBlindIndex;
+use DoctrineCiphersweetBundle\Encryptors\CiphersweetEncryptor;
+use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
  */
 class DoctrineCiphersweetSubscriber implements EventSubscriber
 {
-    /**
-     * Encryptor interface namespace.
-     */
     const ENCRYPTOR_INTERFACE_NS = 'DoctrineCiphersweetBundle\Encryptors\EncryptorInterface';
-
-    /**
-     * Encrypted annotation full name.
-     */
-    const ENCRYPTED_ANN_NAME = EncryptedWithBlindIndex::class;
-
-    /**
-     * Count amount of decrypted values in this service.
-     *
-     * @var int
-     */
-    public $decryptCounter = 0;
-
-    /**
-     * Count amount of encrypted values in this service.
-     *
-     * @var int
-     */
-    public $encryptCounter = 0;
+    const ENCRYPTED_ANN_NAME     = EncryptedWithBlindIndex::class;
 
     /**
      * @var array
      */
-    public $_originalValues = [];
-
+    private $secretKeys = [];
     /**
-     * Encryptor.
-     *
-     * @var EncryptorInterface
+     * @var array
      */
-    private $encryptor;
-
+    public $_originalValues = [];
     /**
      * @var array
      */
     private $decodedRegistry = [];
 
-    /**
-     * Annotation reader.
-     *
-     * @var \Doctrine\Common\Annotations\Reader
-     */
-    private $annReader;
-    /**
-     * Secret key.
-     *
-     * @var array
-     */
-    private $secretKeys = [];
-
-    /**
-     * Used for restoring the encryptor after changing it.
-     *
-     * @var string
-     */
-    private $restoreEncryptor;
+    private EncryptorInterface $encryptor;
+    private Reader $annReader;
+    private CiphersweetEncryptor $restoreEncryptor;
 
     /**
      * Caches information on an entity's encrypted fields in an array keyed on
@@ -261,33 +220,23 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                 continue;
             }
 
-            // if using @Encrypted without key_name then use key called "main" as a sensible default.
-            if (null === $AnnotationConfig->key_name) {
-                $AnnotationConfig->key_name = 'main';
-            }
-            $this->encryptor->setKeyName($AnnotationConfig->key_name);
-
             $value = $refProperty->getValue($entity);
             $value = null === $value ? '' : $value;
 
-
-            $blindIndexSetter = 'set'.ucwords($refProperty->getName()).'Bi';
-            if (method_exists( $entity, $blindIndexSetter)) {
-                $entity->$blindIndexSetter('blind');
-            }
-
             switch ($isEncryptOperation) {
-
                 case true:
-
                     if ('encrypt' === $force) {
-                        $value = $this->encryptor->prepareForStorage($value);
+                        list($value, $indexes)  = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
+                        foreach ($indexes as $key => $blindIndexValue) {
+                            $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
+                            $entity->$setter($blindIndexValue);
+                        }
                     } else {
                         if (\array_key_exists($oid, $this->_originalValues) && \array_key_exists($refProperty->getName(), $this->_originalValues[$oid])) {
                             $oldValue = @$this->_originalValues[$oid][$refProperty->getName()];
 
-                            if ('<Ha>' == substr($oldValue, \strlen($oldValue) - 4)) {
-                                $oldValue = $this->encryptor->decrypt(substr($oldValue, 0, \strlen($oldValue) - 4));
+                            if ('nacl' == substr($oldValue, 0,  4)) {
+                                $oldValue = $this->encryptor->decrypt($entity, $refProperty->getName(), $value);
                             }
                         } else {
                             $oldValue = null;
@@ -296,8 +245,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                         if ($oldValue === $value || (null === $oldValue && null === $value)) {
                             $value = $oldValue;
                         } else {
-                            list ($value, $indexes)  = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
-
+                            list($value, $indexes)  = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                             foreach ($indexes as $key => $blindIndexValue) {
                                 $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
                                 $entity->$setter($blindIndexValue);
@@ -310,10 +258,8 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                 case false:
                     $this->_originalValues[$oid][$refProperty->getName()] = $value;
 
-                    if ('decrypt' === $force && '<Ha>' == substr($value, \strlen($value) - 4)) {
-                        $value = $this->encryptor->decrypt(substr($value, 0, \strlen($value) - 4));
-                    } elseif ('<Ha>' == substr($value, \strlen($value) - 4)) {
-                        $value = $this->encryptor->decrypt(substr($value, 0, \strlen($value) - 4));
+                    if ('nacl' == substr($value, 0, 4)) {
+                        $value = $this->encryptor->decrypt($entity, $refProperty->getName(), $value);
                     }
 
                     break;
@@ -397,7 +343,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
-     * which have @Encrypted annotations.
+     * which have @EncryptedWithBlindIndex annotations.
      */
     public function postLoad(LifecycleEventArgs $args)
     {

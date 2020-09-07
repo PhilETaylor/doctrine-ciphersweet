@@ -1,8 +1,8 @@
 <?php
 /*
- * @copyright  Copyright (C) 2017, 2018, 2019 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
+ * @copyright  Copyright (C) 2020 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
  * @author     Phil Taylor <phil@phil-taylor.com>
- * @see        https://github.com/PhilETaylor/mysites.guru
+ * @see        https://github.com/PhilETaylor/doctrine-ciphersweet
  * @license    MIT
  */
 
@@ -31,15 +31,15 @@ class Configuration implements ConfigurationInterface
         // Grammar of config tree
         $treeBuilder->getRootNode()
             ->children()
-            ->arrayNode('keys')
-            ->useAttributeAsKey('name')
-            ->prototype('scalar')
+                ->arrayNode('keys')
+                    ->useAttributeAsKey('name')
+                    ->prototype('scalar')
+                ->end()
             ->end()
-            ->end()
-            ->scalarNode('secret_key')
-            ->end()
-            ->scalarNode('encryptor')
-            ->end()
+                ->scalarNode('secret_key')
+                ->end()
+                ->scalarNode('encryptor')
+                ->end()
             ->end();
 
         return $treeBuilder;

@@ -20,9 +20,9 @@ return PhpCsFixer\Config::create()
         'header_comment' => [
             'separate'=>'bottom',
             'header' => <<<EOF
-@copyright  Copyright (C) 2017, 2018, 2019 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
+@copyright  Copyright (C) 2020 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
 @author     Phil Taylor <phil@phil-taylor.com>
-@see        https://github.com/PhilETaylor/mysites.guru
+@see        https://github.com/PhilETaylor/doctrine-ciphersweet
 @license    MIT
 EOF
         ]

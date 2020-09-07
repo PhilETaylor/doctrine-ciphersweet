@@ -1,8 +1,8 @@
 <?php
 /*
- * @copyright  Copyright (C) 2017, 2018, 2019 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
+ * @copyright  Copyright (C) 2020 Blue Flame Digital Solutions Limited / Phil Taylor. All rights reserved.
  * @author     Phil Taylor <phil@phil-taylor.com>
- * @see        https://github.com/PhilETaylor/mysites.guru
+ * @see        https://github.com/PhilETaylor/doctrine-ciphersweet
  * @license    MIT
  */
 
@@ -10,8 +10,6 @@ namespace DoctrineCiphersweetBundle\Encryptors;
 
 /**
  * Encryptor interface for encryptors.
- *
- * @author Victor Melnik <melnikvictorl@gmail.com>
  */
 interface EncryptorInterface
 {
@@ -22,24 +20,14 @@ interface EncryptorInterface
      */
     public function __construct($secretKey);
 
-    /**
-     * @param string $data Plain text to encrypt
-     *
-     * @return string Encrypted text
-     */
-    public function encrypt($data);
+    public function prepareForStorage(object $entity, string $fieldName, string $string, int $filterBits = 32): array;
+
+    public function decrypt(object $entity, string $fieldName, string $string, int $filterBits = 32): string;
 
     /**
-     * @param string $data Encrypted text
-     *
-     * @return string Plain text
+     * @param $entityName
+     * @param $fieldName
+     * @param $value
      */
-    public function decrypt($data);
-
-    /**
-     * @param $key
-     *
-     * @return mixed
-     */
-    public function setKeyName($key);
+    public function getBlindIndex($entityName, $fieldName, $value, int $filterBits = 32): string;
 }
