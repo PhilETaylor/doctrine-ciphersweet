@@ -8,21 +8,24 @@
 
 namespace DoctrineCiphersweetBundle\Encryptors;
 
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedField;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\Halite\Alerts\CannotPerformOperation;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\Halite\KeyFactory;
 use ParagonIE\Halite\Symmetric\Crypto;
 use ParagonIE\HiddenString\HiddenString;
 
-/**
- * Class HaliteEncryptor.
- */
-class HaliteEncryptor implements EncryptorInterface
+class CiphersweetEncryptor implements EncryptorInterface
 {
     /**
      * @var array of key name/filepaths
      */
-    private $enc_keys;
+    private array $enc_keys;
+
+    private CipherSweet $engine;
 
     /**
      * @var HiddenString
@@ -44,7 +47,29 @@ class HaliteEncryptor implements EncryptorInterface
      */
     public function __construct($keys)
     {
+        //        dd(bin2hex(random_bytes(32)));
         $this->enc_keys = $keys;
+
+        $provider = new StringProvider(
+            trim(file_get_contents($keys['ciphersweet']))
+        );
+
+        // From this point forward, you only need your Engine:
+        $this->engine = new CipherSweet($provider);
+    }
+
+    public function prepareForStorage(object $entity, string $fieldName, string $string, int $filterBits = 32)
+    {
+        $entityName = get_class($entity);
+        dump($entityName);
+        dump($fieldName);
+        dump($string);
+        $fieldName = (new EncryptedField($this->engine, $entityName, $fieldName))
+            ->addBlindIndex(
+                new BlindIndex($fieldName.'_bi', [], 32)
+            );
+
+        return $fieldName->prepareForStorage($string);
     }
 
     /**
@@ -52,6 +77,10 @@ class HaliteEncryptor implements EncryptorInterface
      */
     public function encrypt($data)
     {
+        dd(debug_backtrace());
+        dd($data);
+        die;
+
         // already encrypted!
         if (false !== strpos($data, '<Ha>')) {
             return $data;
@@ -100,7 +129,7 @@ class HaliteEncryptor implements EncryptorInterface
     {
         if (\array_key_exists($key_name, $this->enc_keys)) {
             $this->enc_key_name = $key_name;
-            $this->enc_key      = KeyFactory::loadEncryptionKey($this->enc_keys[$key_name]);
+            $this->enc_key = KeyFactory::loadEncryptionKey($this->enc_keys[$key_name]);
         }
     }
 }

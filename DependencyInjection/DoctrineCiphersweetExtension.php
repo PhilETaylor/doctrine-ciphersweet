@@ -33,7 +33,7 @@ class DoctrineCiphersweetExtension extends Extension
         //Set orm-service in array of services
         $services = ['orm' => 'orm-services'];
 
-        $container->setParameter('doctrine_ciphersweet.encryptor_class_name', 'DoctrineCiphersweetBundle\Encryptors\HaliteEncryptor');
+        $container->setParameter('doctrine_ciphersweet.encryptor_class_name', 'DoctrineCiphersweetBundle\Encryptors\CiphersweetEncryptor');
         $container->setParameter('doctrine_ciphersweet.keys', $config['keys']);
         //Load service file
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));

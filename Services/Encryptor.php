@@ -28,11 +28,13 @@ class Encryptor
 
     public function decrypt($string)
     {
+        dd(__FILE__);
         return $this->encryptor->decrypt($string);
     }
 
     public function encrypt($string)
     {
+        dd(__FILE__);
         return $this->encryptor->encrypt($string);
     }
 }

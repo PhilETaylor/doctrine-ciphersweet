@@ -16,6 +16,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
+use DoctrineCiphersweetBundle\Configuration\EncryptedWithBlindIndex;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
@@ -30,7 +31,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
     /**
      * Encrypted annotation full name.
      */
-    const ENCRYPTED_ANN_NAME = 'DoctrineCiphersweetBundle\Configuration\Encrypted';
+    const ENCRYPTED_ANN_NAME = EncryptedWithBlindIndex::class;
 
     /**
      * Count amount of decrypted values in this service.
@@ -268,10 +269,18 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
             $value = $refProperty->getValue($entity);
             $value = null === $value ? '' : $value;
 
+
+            $blindIndexSetter = 'set'.ucwords($refProperty->getName()).'Bi';
+            if (method_exists( $entity, $blindIndexSetter)) {
+                $entity->$blindIndexSetter('blind');
+            }
+
             switch ($isEncryptOperation) {
+
                 case true:
+
                     if ('encrypt' === $force) {
-                        $value = $this->encryptor->encrypt($value);
+                        $value = $this->encryptor->prepareForStorage($value);
                     } else {
                         if (\array_key_exists($oid, $this->_originalValues) && \array_key_exists($refProperty->getName(), $this->_originalValues[$oid])) {
                             $oldValue = @$this->_originalValues[$oid][$refProperty->getName()];
@@ -286,7 +295,9 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                         if ($oldValue === $value || (null === $oldValue && null === $value)) {
                             $value = $oldValue;
                         } else {
-                            $value = $this->encryptor->encrypt($value);
+                            list ($value, $indexes)  = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
+                            dump($value);
+                            dd($indexes);
                         }
                     }
 
