@@ -1,0 +1,35 @@
+{
+    "name": "philetaylor/ciphersweet-encrypt",
+    "type": "symfony-bundle",
+    "keywords": ["doctrine", "symfony", "encrypt", "decrypt"],
+    "license": "MIT",
+    "description": "Symfony 3.4+/PHP7.2+ bundle which allows to encrypt data in database",
+    "require": {
+        "php": ">=7.2",
+        "symfony/framework-bundle": ">=3.4",
+        "doctrine/orm": ">=2.5",
+        "paragonie/halite": ">=4.4",
+        "paragonie/hidden-string": "^1"
+    },
+    "autoload": {
+        "psr-0": {
+            "DoctrineCiphersweetBundle\\": ""
+        },
+        "psr-4": {
+            "DoctrineCiphersweetBundle\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Phil Taylor",
+            "email": "phil@phil-taylor.com"
+        },
+        {
+            "name": "Marcel van Nuil",
+            "email": "marcel@ambta.com"
+        }
+    ]
+}
