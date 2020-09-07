@@ -3,13 +3,12 @@
     "type": "symfony-bundle",
     "keywords": ["doctrine", "symfony", "encrypt", "decrypt"],
     "license": "MIT",
-    "description": "Symfony 3.4+/PHP7.2+ bundle which allows to encrypt data in database",
+    "description": "Symfony 5.1+/PHP7.4 bundle which allows to encrypt data in database but keep it searchable, uses CipherSweet from https://ciphersweet.paragonie.com",
     "require": {
-        "php": ">=7.2",
-        "symfony/framework-bundle": ">=3.4",
+        "php": ">=7.4",
+        "symfony/framework-bundle": ">=5.1",
         "doctrine/orm": ">=2.5",
-        "paragonie/halite": ">=4.4",
-        "paragonie/hidden-string": "^1"
+        "paragonie/ciphersweet": "^2"
     },
     "autoload": {
         "psr-0": {
