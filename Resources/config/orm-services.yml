@@ -1,0 +1,18 @@
+services:
+    doctrine_encrypt.orm_subscriber:
+        class: DoctrineCiphersweetBundle\Subscribers\DoctrineCiphersweetSubscriber
+        arguments: ["@annotation_reader", "%doctrine_ciphersweet.encryptor_class_name%", "%doctrine_ciphersweet.keys%"]
+        tags:
+            -  { name: doctrine.event_subscriber }
+
+    DoctrineCiphersweetBundle\Subscribers\DoctrineCiphersweetSubscriber:
+        alias: doctrine_encrypt.orm_subscriber
+
+    doctrine_encrypt.subscriber:
+        alias: doctrine_encrypt.orm_subscriber
+
+    doctrine_encrypt.encryptor:
+        class: DoctrineCiphersweetBundle\Services\Encryptor
+        arguments:
+            - "%doctrine_ciphersweet.encryptor_class_name%"
+            - "%doctrine_ciphersweet.keys%"
