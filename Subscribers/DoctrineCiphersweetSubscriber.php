@@ -21,11 +21,15 @@ use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
+ *
  * @author Parts of this file were forked a longtime ago from ambta/DoctrineEncryptBundle
  */
 class DoctrineCiphersweetSubscriber implements EventSubscriber
 {
-    const ENCRYPTED_ANN_NAME     = EncryptedWithBlindIndex::class;
+    const ENCRYPTED_ANN_NAME = EncryptedWithBlindIndex::class;
+
+    private EncryptorInterface $encryptor;
+    private Reader $annReader;
 
     /**
      * @var array
@@ -35,11 +39,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      * @var array
      */
     private $decodedRegistry = [];
-
-    private EncryptorInterface $encryptor;
-    private Reader $annReader;
-    private CiphersweetEncryptor $restoreEncryptor;
-
     /**
      * Caches information on an entity's encrypted fields in an array keyed on
      * the entity's class name. The value will be a list of Reflected fields that are encrypted.
@@ -62,35 +61,16 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      */
     public function __construct(Reader $annReader, $encryptorClass)
     {
-        $this->annReader  = $annReader;
-        $this->encryptor  = $encryptorClass;
-
-        $this->restoreEncryptor = $this->encryptor;
-    }
-
-    public static function capitalize(string $word): string
-    {
-        if (\is_array($word)) {
-            $word = $word[0];
-        }
-
-        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $word)));
-    }
-
-    /**
-     * Restore encryptor set in config.
-     */
-    public function restoreEncryptor()
-    {
-        $this->encryptor = $this->restoreEncryptor;
+        $this->annReader = $annReader;
+        $this->encryptor = $encryptorClass;
     }
 
     /**
      * Encrypt the password before it is written to the database.
      */
-    public function onFlush(OnFlushEventArgs $args)
+    public function onFlush(OnFlushEventArgs $args): void
     {
-        $em         = $args->getEntityManager();
+        $em = $args->getEntityManager();
         $unitOfWork = $em->getUnitOfWork();
 
         $this->postFlushDecryptQueue = [];
@@ -111,7 +91,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      *
      * @param object $entity
      */
-    private function entityOnFlush($entity, EntityManagerInterface $em)
+    private function entityOnFlush($entity, EntityManagerInterface $em): void
     {
         $objId = spl_object_hash($entity);
 
@@ -136,7 +116,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      *
      * @return \ReflectionProperty[]
      */
-    private function getEncryptedFields($entity, EntityManagerInterface $em)
+    private function getEncryptedFields($entity, EntityManagerInterface $em): array
     {
         $className = \get_class($entity);
 
@@ -144,7 +124,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
             return $this->encryptedFieldCache[$className];
         }
 
-        $meta            = $em->getClassMetadata($className);
+        $meta = $em->getClassMetadata($className);
         $encryptedFields = [];
 
         foreach ($meta->getReflectionProperties() as $refProperty) {
@@ -162,10 +142,8 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
     /**
      * Process (encrypt/decrypt) entities fields.
-     *
-     * @param object $entity Some doctrine entity
      */
-    public function processFields($entity, EntityManagerInterface $em, $isEncryptOperation = true, $force = null): bool
+    public function processFields(object $entity, EntityManagerInterface $em, $isEncryptOperation = true, $force = null): bool
     {
         $properties = $this->getEncryptedFields($entity, $em);
         $unitOfWork = $em->getUnitOfWork();
@@ -183,7 +161,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                     if ('encrypt' === $force) {
                         list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                         foreach ($indexes as $key => $blindIndexValue) {
-                            $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
+                            $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
                             $entity->$setter($blindIndexValue);
                         }
                     } else {
@@ -202,7 +180,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                         } else {
                             list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                             foreach ($indexes as $key => $blindIndexValue) {
-                                $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
+                                $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
                                 $entity->$setter($blindIndexValue);
                             }
                         }
@@ -237,14 +215,14 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      * After we have persisted the entities, we want to have the
      * decrypted information available once more.
      */
-    public function postFlush(PostFlushEventArgs $args)
+    public function postFlush(PostFlushEventArgs $args): void
     {
         $unitOfWork = $args->getEntityManager()->getUnitOfWork();
 
         foreach ($this->postFlushDecryptQueue as $pair) {
             $fieldPairs = $pair['fields'];
-            $entity     = $pair['entity'];
-            $oid        = spl_object_hash($entity);
+            $entity = $pair['entity'];
+            $oid = spl_object_hash($entity);
 
             foreach ($fieldPairs as $fieldPair) {
                 /** @var \ReflectionProperty $field */
@@ -263,7 +241,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      *
      * @param object $entity Some doctrine entity
      */
-    private function addToDecodedRegistry($entity)
+    private function addToDecodedRegistry($entity): void
     {
         $this->decodedRegistry[spl_object_hash($entity)] = true;
     }
@@ -272,13 +250,11 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @EncryptedWithBlindIndex annotations.
      */
-    public function postLoad(LifecycleEventArgs $args)
+    public function postLoad(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();
-        $em     = $args->getEntityManager();
-
         if (!$this->hasInDecodedRegistry($entity)) {
-            if ($this->processFields($entity, $em, false)) {
+            if ($this->processFields($entity, $args->getEntityManager(), false)) {
                 $this->addToDecodedRegistry($entity);
             }
         }
