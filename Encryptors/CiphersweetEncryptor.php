@@ -44,6 +44,7 @@ class CiphersweetEncryptor implements EncryptorInterface
         return (new EncryptedField($this->engine, $entityName, $fieldName))
             ->addBlindIndex(
                 new BlindIndex($fieldName.'_bi', [], $filterBits)
-            )->getBlindIndex($value, $fieldName.'_bi');
+            )
+            ->getBlindIndex($value, $fieldName.'_bi');
     }
 }
