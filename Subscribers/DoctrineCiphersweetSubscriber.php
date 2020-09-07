@@ -15,6 +15,7 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\Mapping\UnderscoreNamingStrategy;
 use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 use DoctrineCiphersweetBundle\Configuration\EncryptedWithBlindIndex;
 
@@ -296,8 +297,11 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                             $value = $oldValue;
                         } else {
                             list ($value, $indexes)  = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
-                            dump($value);
-                            dd($indexes);
+
+                            foreach ($indexes as $key => $blindIndexValue) {
+                                $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
+                                $entity->$setter($blindIndexValue);
+                            }
                         }
                     }
 

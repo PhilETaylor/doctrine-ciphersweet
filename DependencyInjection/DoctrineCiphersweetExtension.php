@@ -48,6 +48,6 @@ class DoctrineCiphersweetExtension extends Extension
      */
     public function getAlias()
     {
-        return 'doctrine_encrypt';
+        return 'doctrine_ciphersweet';
     }
 }
