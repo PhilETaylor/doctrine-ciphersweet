@@ -8,11 +8,11 @@
 
 namespace DoctrineCiphersweetBundle\Encryptors;
 
-use ParagonIE\HiddenString\HiddenString;
-use ParagonIE\Halite\KeyFactory;
-use ParagonIE\Halite\Symmetric\Crypto;
 use ParagonIE\Halite\Alerts\CannotPerformOperation;
 use ParagonIE\Halite\Alerts\InvalidKey;
+use ParagonIE\Halite\KeyFactory;
+use ParagonIE\Halite\Symmetric\Crypto;
+use ParagonIE\HiddenString\HiddenString;
 
 /**
  * Class HaliteEncryptor.

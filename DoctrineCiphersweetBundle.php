@@ -8,17 +8,14 @@
 
 namespace DoctrineCiphersweetBundle;
 
-use DoctrineCiphersweetBundle\DependencyInjection\DoctrineCiphersweetExtension;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use DoctrineCiphersweetBundle\DependencyInjection\Compiler\RegisterServiceCompilerPass;
+use DoctrineCiphersweetBundle\DependencyInjection\DoctrineCiphersweetExtension;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class DoctrineCiphersweetBundle extends Bundle
 {
-    /**
-     * @param ContainerBuilder $container
-     */
     public function build(ContainerBuilder $container)
     {
         parent::build($container);

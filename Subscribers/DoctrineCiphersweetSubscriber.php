@@ -103,7 +103,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
     /**
      * Initialization of subscriber.
      *
-     * @param Reader                  $annReader
      * @param string                  $encryptorClass The encryptor class.  This can be empty if a service is being provided.
      * @param string                  $secretKey      the secret key
      * @param EncryptorInterface|null $service        (Optional)  An EncryptorInterface.
@@ -144,11 +143,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
         }
     }
 
-    /**
-     * @param string $word
-     *
-     * @return string
-     */
     public static function capitalize(string $word): string
     {
         if (\is_array($word)) {
@@ -158,9 +152,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
         return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $word)));
     }
 
-    /**
-     * @return array
-     */
     public function getSecretKeys(): array
     {
         return $this->secretKeys;
@@ -253,8 +244,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      * Process (encrypt/decrypt) entities fields.
      *
      * @param object $entity Some doctrine entity
-     *
-     * @return bool
      */
     public function processFields($entity, EntityManagerInterface $em, $isEncryptOperation = true, $force = null): bool
     {
@@ -281,7 +270,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
             switch ($isEncryptOperation) {
                 case true:
-
                     if ('encrypt' === $force) {
                         $value = $this->encryptor->encrypt($value);
                     } else {
@@ -305,7 +293,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                     break;
 
                 case false:
-
                     $this->_originalValues[$oid][$refProperty->getName()] = $value;
 
                     if ('decrypt' === $force && '<Ha>' == substr($value, \strlen($value) - 4)) {
