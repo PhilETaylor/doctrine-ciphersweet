@@ -4,7 +4,6 @@ services:
         arguments:
             - "@annotation_reader"
             - "@DoctrineCiphersweetBundle\\Encryptors\\CiphersweetEncryptor"
-            - "%env(doctrine_ciphersweet_key)%"
         tags:
             -  { name: doctrine.event_subscriber }
 

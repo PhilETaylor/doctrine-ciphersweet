@@ -21,16 +21,12 @@ use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
+ * @author Parts of this file were forked a longtime ago from ambta/DoctrineEncryptBundle
  */
 class DoctrineCiphersweetSubscriber implements EventSubscriber
 {
-    const ENCRYPTOR_INTERFACE_NS = 'DoctrineCiphersweetBundle\Encryptors\EncryptorInterface';
     const ENCRYPTED_ANN_NAME     = EncryptedWithBlindIndex::class;
 
-    /**
-     * @var array
-     */
-    private $secretKeys = [];
     /**
      * @var array
      */
@@ -63,17 +59,10 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
     /**
      * Initialization of subscriber.
-     *
-     * @param string                  $encryptorClass The encryptor class.  This can be empty if a service is being provided.
-     * @param string                  $secretKey      the secret key
-     * @param EncryptorInterface|null $service        (Optional)  An EncryptorInterface.
-     *
-     * This allows for the use of dependency injection for the encrypters.
      */
-    public function __construct(Reader $annReader, $encryptorClass, string $key)
+    public function __construct(Reader $annReader, $encryptorClass)
     {
         $this->annReader  = $annReader;
-        $this->secretKeys = $key;
         $this->encryptor  = $encryptorClass;
 
         $this->restoreEncryptor = $this->encryptor;
@@ -86,11 +75,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
         }
 
         return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $word)));
-    }
-
-    public function getSecretKeys(): array
-    {
-        return $this->secretKeys;
     }
 
     /**
@@ -191,10 +175,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
         foreach ($properties as $refProperty) {
             $AnnotationConfig = $this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME);
 
-            if (null === $this->getEncryptor()) {
-                continue;
-            }
-
             $value = $refProperty->getValue($entity);
             $value = null === $value ? '' : $value;
 
@@ -251,34 +231,6 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
         }
 
         return !empty($properties);
-    }
-
-    /**
-     * Get the current encryptor.
-     */
-    public function getEncryptor()
-    {
-        if (!empty($this->encryptor)) {
-            return \get_class($this->encryptor);
-        } else {
-            return;
-        }
-    }
-
-    /**
-     * Change the encryptor.
-     *
-     * @param $encryptorClass
-     */
-    public function setEncryptor($encryptorClass)
-    {
-        if (null !== $encryptorClass) {
-            $this->encryptor = $this->encryptorFactory($encryptorClass, $this->secretKeys);
-
-            return;
-        }
-
-        $this->encryptor = null;
     }
 
     /**
