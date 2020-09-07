@@ -16,7 +16,6 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use DoctrineCiphersweetBundle\Configuration\EncryptedWithBlindIndex;
-use DoctrineCiphersweetBundle\Encryptors\CiphersweetEncryptor;
 use DoctrineCiphersweetBundle\Encryptors\EncryptorInterface;
 
 /**
@@ -70,7 +69,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
      */
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $em = $args->getEntityManager();
+        $em         = $args->getEntityManager();
         $unitOfWork = $em->getUnitOfWork();
 
         $this->postFlushDecryptQueue = [];
@@ -124,7 +123,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
             return $this->encryptedFieldCache[$className];
         }
 
-        $meta = $em->getClassMetadata($className);
+        $meta            = $em->getClassMetadata($className);
         $encryptedFields = [];
 
         foreach ($meta->getReflectionProperties() as $refProperty) {
@@ -161,7 +160,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                     if ('encrypt' === $force) {
                         list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                         foreach ($indexes as $key => $blindIndexValue) {
-                            $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
+                            $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
                             $entity->$setter($blindIndexValue);
                         }
                     } else {
@@ -180,7 +179,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
                         } else {
                             list($value, $indexes) = $this->encryptor->prepareForStorage($entity, $refProperty->getName(), $value);
                             foreach ($indexes as $key => $blindIndexValue) {
-                                $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
+                                $setter = 'set'.str_replace('_', '', ucwords($key, '_'));
                                 $entity->$setter($blindIndexValue);
                             }
                         }
@@ -221,8 +220,8 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
         foreach ($this->postFlushDecryptQueue as $pair) {
             $fieldPairs = $pair['fields'];
-            $entity = $pair['entity'];
-            $oid = spl_object_hash($entity);
+            $entity     = $pair['entity'];
+            $oid        = spl_object_hash($entity);
 
             foreach ($fieldPairs as $fieldPair) {
                 /** @var \ReflectionProperty $field */
