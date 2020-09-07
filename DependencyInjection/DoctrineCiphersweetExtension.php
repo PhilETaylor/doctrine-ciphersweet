@@ -23,19 +23,7 @@ class DoctrineCiphersweetExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        //Create configuration object
-        $configuration = new Configuration();
-        $config        = $this->processConfiguration($configuration, $configs);
-
-        $container->setParameter('doctrine_ciphersweet.keys', $config['keys']);
-
-        //Load service file
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('orm-services.yml');
-    }
-
-    public function getAlias(): string
-    {
-        return 'doctrine_ciphersweet';
     }
 }

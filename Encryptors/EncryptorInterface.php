@@ -8,26 +8,15 @@
 
 namespace DoctrineCiphersweetBundle\Encryptors;
 
-/**
- * Encryptor interface for encryptors.
- */
+use ParagonIE\CipherSweet\CipherSweet;
+
 interface EncryptorInterface
 {
-    /**
-     * Must accept secret key for encryption.
-     *
-     * @param string $secretKey the encryption key
-     */
-    public function __construct($secretKey);
+    public function __construct(CipherSweet $engine);
 
     public function prepareForStorage(object $entity, string $fieldName, string $string, int $filterBits = 32): array;
 
     public function decrypt(object $entity, string $fieldName, string $string, int $filterBits = 32): string;
 
-    /**
-     * @param $entityName
-     * @param $fieldName
-     * @param $value
-     */
     public function getBlindIndex($entityName, $fieldName, $value, int $filterBits = 32): string;
 }

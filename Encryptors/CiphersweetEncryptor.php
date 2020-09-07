@@ -17,14 +17,9 @@ class CiphersweetEncryptor implements EncryptorInterface
 {
     private CipherSweet $engine;
 
-    public function __construct($keys)
+    public function __construct(CipherSweet $engine)
     {
-        $provider = new StringProvider(
-            trim(file_get_contents($keys['ciphersweet']))
-        );
-
-        // From this point forward, you only need your Engine:
-        $this->engine = new CipherSweet($provider);
+        $this->engine = $engine;
     }
 
     public function prepareForStorage(object $entity, string $fieldName, string $string, int $filterBits = 32): array

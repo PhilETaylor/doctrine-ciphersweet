@@ -14,11 +14,6 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class DoctrineCiphersweetBundle extends Bundle
 {
-    public function build(ContainerBuilder $container)
-    {
-        parent::build($container);
-    }
-
     /**
      * @return DoctrineCiphersweetExtension
      */

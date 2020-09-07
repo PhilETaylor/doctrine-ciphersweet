@@ -1,11 +1,21 @@
 services:
     DoctrineCiphersweetBundle\Subscribers\DoctrineCiphersweetSubscriber:
         class: DoctrineCiphersweetBundle\Subscribers\DoctrineCiphersweetSubscriber
-        arguments: ["@annotation_reader", "@DoctrineCiphersweetBundle\\Encryptors\\CiphersweetEncryptor", "%doctrine_ciphersweet.keys%"]
+        arguments:
+            - "@annotation_reader"
+            - "@DoctrineCiphersweetBundle\\Encryptors\\CiphersweetEncryptor"
+            - "%env(doctrine_ciphersweet_key)%"
         tags:
             -  { name: doctrine.event_subscriber }
 
+    ParagonIE\CipherSweet\KeyProvider\StringProvider:
+        class: ParagonIE\CipherSweet\KeyProvider\StringProvider
+        arguments: ["%env(doctrine_ciphersweet_key)%"]
+
+    ParagonIE\CipherSweet\CipherSweet:
+        class: ParagonIE\CipherSweet\CipherSweet
+        arguments: ["@ParagonIE\\CipherSweet\\KeyProvider\\StringProvider"]
+
     DoctrineCiphersweetBundle\Encryptors\CiphersweetEncryptor:
         class: DoctrineCiphersweetBundle\Encryptors\CiphersweetEncryptor
-        arguments:
-            - "%doctrine_ciphersweet.keys%"
+        arguments: ["@ParagonIE\\CipherSweet\\CipherSweet"]
