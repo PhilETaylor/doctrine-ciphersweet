@@ -10,6 +10,7 @@ namespace DoctrineCiphersweetBundle\Configuration;
 
 /**
  * The Encrypted class handles the @EncryptedWithBlindIndex annotation.
+ * @Annotation
  */
 class EncryptedWithBlindIndex
 {
