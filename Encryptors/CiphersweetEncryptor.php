@@ -30,9 +30,9 @@ class CiphersweetEncryptor implements EncryptorInterface
             ->prepareForStorage($string);
     }
 
-    public function decrypt(object $entity, string $fieldName, string $string, int $filterBits = 32): string
+    public function decrypt(string $entity_classname, string $fieldName, string $string, int $filterBits = 32): string
     {
-        return (new EncryptedField($this->engine, \get_class($entity), $fieldName))
+        return (new EncryptedField($this->engine, $entity_classname, $fieldName))
             ->addBlindIndex(
                 new BlindIndex($fieldName.'_bi', [], $filterBits)
             )

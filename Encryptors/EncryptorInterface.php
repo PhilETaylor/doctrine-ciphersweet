@@ -16,7 +16,7 @@ interface EncryptorInterface
 
     public function prepareForStorage(object $entity, string $fieldName, string $string, int $filterBits = 32): array;
 
-    public function decrypt(object $entity, string $fieldName, string $string, int $filterBits = 32): string;
+    public function decrypt(string $entity_classname, string $fieldName, string $string, int $filterBits = 32): string;
 
     public function getBlindIndex($entityName, $fieldName, $value, int $filterBits = 32): string;
 }
