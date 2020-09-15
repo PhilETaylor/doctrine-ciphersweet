@@ -169,7 +169,7 @@ class DoctrineCiphersweetSubscriber implements EventSubscriber
 
                             if ('nacl' == substr($oldValue, 0, 4)) {
                                 $class_name =$em->getClassMetadata(get_class($entity))->getName();
-                                $oldValue = $this->encryptor->decrypt($entity, $refProperty->getName(), $oldValue);
+                                $oldValue = $this->encryptor->decrypt($class_name, $refProperty->getName(), $oldValue);
                             }
                         } else {
                             $oldValue = null;
